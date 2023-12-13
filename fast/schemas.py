@@ -20,6 +20,7 @@ class EmployeeBase(BaseModel):
     employee_phone_number: str
     role: str
     password: str
+    email:str
 
 class EmployeeCreate(EmployeeBase):
     pass
@@ -66,20 +67,35 @@ class Item(ItemBase):
 
 
 
-class AddBase(BaseModel):
+class AddItemBase(BaseModel):
     item_id: int
     employee_id: int
     check_in_date: date
     check_in_time: time
-class AddCreate(AddBase):
+class AddItemCreate(AddItemBase):
     pass
 
-class Add(AddBase):
-    add_id: int
+class AddItem(AddItemBase):
+    add_item_id: int
 
     class Config:
         from_attributes = True
 
+
+
+class AddToolBase(BaseModel):
+    tool_id: int
+    employee_id: int
+    check_in_date: date
+    check_in_time: time
+class AddToolCreate(AddToolBase):
+    pass
+
+class AddTool(AddToolBase):
+    add_tool_id: int
+
+    class Config:
+        from_attributes = True
 
 
 class BookBase(BaseModel):

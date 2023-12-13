@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 
 # Branch CRUD Functions
+#   C    R     U       D
+# create read update delete
 def get_branch(db: Session, branch_id: int):
     return db.query(models.Branch).filter(models.Branch.branch_id == branch_id).first()
 
@@ -122,27 +124,27 @@ def delete_item(db: Session, item_id: int):
 
 # Add CRUD Functions
 def get_add(db: Session, add_id: int):
-    return db.query(models.Add).filter(models.Add.add_id == add_id).first()
+    return db.query(models.AddItem).filter(models.AddItem.add_id == add_id).first()
 
-def create_add(db : Session ,add :schemas.AddCreate):
-    db_add = models.Add(**add.model_dump())
+def create_add(db : Session ,add :schemas.AddItemCreate):
+    db_add = models.AddItem(**add.model_dump())
     db.add(db_add)
     db.commit()
     db.refresh(db_add)
     return db_add
 
 def get_all_adds( skip: int , limit: int , db : Session  ):
-    return db.query(models.Add).offset(skip).limit(limit).all()
+    return db.query(models.AddItem).offset(skip).limit(limit).all()
 
 def update_add(db : Session, add_id):
-    db_add_update = (models.Add).filter(models.Add.add_id == add_id).first()
+    db_add_update = (models.AddItem).filter(models.AddItem.add_id == add_id).first()
     db.add(db_add_update)
     db.commit()
     db.refresh(db_add_update)
     return db_add_update
 
 def delete_add(db : Session, add_id):
-    db_add_delete = db.query(models.Add).filter(models.Add.add_id == add_id).first()
+    db_add_delete = db.query(models.AddItem).filter(models.AddItem.add_id == add_id).first()
     db.delete(db_add_delete)
     db.commit()
     return db_add_delete

@@ -1,1 +1,5 @@
 fast/private.py
+fast/__pycache__
+__pycache__
+.vscode
+private.py
