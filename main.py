@@ -215,45 +215,45 @@ def update_item(item_id: int, item: schemas.ItemCreate, db: Session = Depends(ge
         raise HTTPException(status_code=404, detail="Item not found")
     return db_update
 
-
+#TODO:
 # -----DONT FORGET TO CREATE ADD_ITEM AND ADD_TOOL---------
 # Add Api functions
-@app.post(f"/{adds}""/", )  # response_model=schemas.AddItem)
-def create_add(add: schemas.AddItemCreate, db: Session = Depends(get_db)):
-    db_add = crud.create_add(db, add=add)
-    if db_add is None:
-        raise HTTPException(status_code=400, detail="Add_id is already exists")
-    return db_add
+# @app.post(f"/{adds}""/", )  # response_model=schemas.AddItem)
+# def create_add(add: schemas.AddItemCreate, db: Session = Depends(get_db)):
+#     db_add = crud.create_add(db, add=add)
+#     if db_add is None:
+#         raise HTTPException(status_code=400, detail="Add_id is already exists")
+#     return db_add
 
 
-@app.get(f"/{adds}""/{add_id}", )  # response_model=schemas.AddItem)
-def read_add(add_id: int, db: Session = Depends(get_db)):
-    db_add = crud.get_add(db, add_id=add_id)
-    if db_add is None:
-        raise HTTPException(status_code=404, detail="Add not found")
-    return db_add
+# @app.get(f"/{adds}""/{add_id}", )  # response_model=schemas.AddItem)
+# def read_add(add_id: int, db: Session = Depends(get_db)):
+#     db_add = crud.get_add(db, add_id=add_id)
+#     if db_add is None:
+#         raise HTTPException(status_code=404, detail="Add not found")
+#     return db_add
 
 
-@app.get(f"/{adds}""/", )  # response_model=List[schemas.AddItem])
-def read_all_adds(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    adds = crud.get_all_adds(skip, limit, db)
-    return adds
+# @app.get(f"/{adds}""/", )  # response_model=List[schemas.AddItem])
+# def read_all_adds(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+#     adds = crud.get_all_adds(skip, limit, db)
+#     return adds
 
 
-@app.delete(f"/{adds}""/{add_id}", )  # response_model=schemas.AddItem)
-def delete_add(add_id: int, db: Session = Depends(get_db)):
-    db_delete = crud.delete_add(db, add_id=add_id)
-    if db_delete is None:
-        raise HTTPException(status_code=404, detail="Add not found")
-    return db_delete
+# @app.delete(f"/{adds}""/{add_id}", )  # response_model=schemas.AddItem)
+# def delete_add(add_id: int, db: Session = Depends(get_db)):
+#     db_delete = crud.delete_add(db, add_id=add_id)
+#     if db_delete is None:
+#         raise HTTPException(status_code=404, detail="Add not found")
+#     return db_delete
 
 
-@app.put(f"/{adds}""/{add_id}", )  # response_model=schemas.AddItem)
-def update_add(add_id: int, db: Session = Depends(get_db)):
-    db_update = crud.update_add(db, add_id=add_id)
-    if db_update is None:
-        raise HTTPException(status_code=404, detail="Add not found")
-    return db_update
+# @app.put(f"/{adds}""/{add_id}", )  # response_model=schemas.AddItem)
+# def update_add(add_id: int, db: Session = Depends(get_db)):
+#     db_update = crud.update_add(db, add_id=add_id)
+#     if db_update is None:
+#         raise HTTPException(status_code=404, detail="Add not found")
+#     return db_update
 
 
 # Book Api Functions

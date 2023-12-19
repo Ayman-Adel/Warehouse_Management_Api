@@ -108,7 +108,7 @@ class AddItem(AddItemBase):
     check_in_date: date
     check_in_time: time
     items: Item
-    empolyee: Employee
+    employee: Employee
 
     class Config:
         from_attributes = True
