@@ -21,6 +21,7 @@ class Branch(BranchBase):
 
 class CommentBase(BaseModel):
     employee_id: int
+    item_id : int
     comment: str
     type: str
 
@@ -31,7 +32,6 @@ class CommentCreate(CommentBase):
 
 class Comment(CommentBase):
     comment_id: int
-    item_id : int
     date: date
     time: time
 
@@ -41,11 +41,11 @@ class Comment(CommentBase):
 class Check_In_Out_Base(BaseModel):
     item_id: int
     employee_id: int
+    estimated_Check_in_Date: date
     check_out_date: date
     check_out_time: time
-    estimated_Check_in_Date: date
-    job_assigned: Optional[str] = str(null)
-    company_lended: Optional[str] = str(null)
+    job_assigned: Optional[str]  = Field(default=null())
+    company_lended: Optional[str] = Field(default=null())
 
 
 
@@ -135,8 +135,6 @@ class Tool(ToolBase):
 
 class ItemBase(BaseModel):
     tool_id: int
-    job_assigned: Optional[str] 
-    company_lended: Optional[str]
     branch_id: int
     status: str
     
@@ -147,8 +145,8 @@ class ItemCreate(ItemBase):
 
 class Item(ItemBase):
     item_id: int
-    job_assigned: Optional[str]
-    company_lended: Optional[str]
+    job_assigned: Optional[str] = Field(default=null())
+    company_lended: Optional[str] = Field(default=null())
     comments: List["Comment"] = []
     check_in_outs: List["Check_in_out"] = []
     book: Optional["Book"]

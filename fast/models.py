@@ -122,8 +122,8 @@ class Check_in_out(Base):
     check_out_date = Column(Date, default=func.current_date(), index=True)
     check_out_time = Column(Time, default=func.current_time(), index=True)
     estimated_Check_in_Date = Column(Date, index=True)
-    job_assigned = Column(String)
-    company_lended = Column(String)
+    job_assigned = Column(String,default=null())
+    company_lended = Column(String,default=null())
     
     item = relationship("Item", back_populates="check_in_outs")
     employee = relationship("Employee", back_populates="check_in_outs")

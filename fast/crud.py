@@ -120,7 +120,7 @@ def delete_tool(db: Session, tool_id: int):
 
 # Tool CRUD Functions
 def get_item(db: Session, item_id: int):
-    item = db.query(models.Item).filter(models.Item.item_id == item_id).options(joinedload(models.Item.tool)).first()
+    item = db.query(models.Item).filter(models.Item.item_id == item_id).options(joinedload(models.Item.tool)).options(joinedload(models.Item.comments)).first()
     return item
 
 
@@ -234,11 +234,11 @@ def create_book(db: Session, book: schemas.BookCreate):
     db.refresh(db_book)
     db_item = db.query(models.Item).filter(models.Item.item_id == db_book.item_id).first()
     if db_item :
-      
-        #if db_book.item_id is not None:
-            #db_item.status = "Booked"
-            
-     return db_book
+        if db_book.item_id is not None:
+            db_item.status = "Booked"
+    db.commit()
+    db.refresh(db_item)
+    return db_book
 
 
 def get_all_books(skip: int, limit: int, db: Session):
@@ -303,17 +303,22 @@ def get_check_out(db: Session, check_id: int):
 
 def create_check_out(db: Session, check_in_out: schemas.Check_in_out_Create):
     db_check_in_out = models.Check_in_out(**check_in_out.model_dump())
+    if db_check_in_out:
+        if db_check_in_out.check_out_date is not null:
+            db_check_in_out.check_in_date = null()
+        if db_check_in_out.check_out_time is not null :
+            db_check_in_out.check_in_time = null()
+
     db.add(db_check_in_out)
     db.commit()
     db.refresh(db_check_in_out)
     db_item = db.query(models.Item).filter(models.Item.item_id == db_check_in_out.item_id).first()
     if db_item :
-
         if db_check_in_out.job_assigned is not None:
-            db_item.status = db_check_in_out.job_assigned
+            db_item.status = "Job assigned"
             db_item.job_assigned = db_check_in_out.job_assigned
         elif db_check_in_out.company_lended is not None:
-            db_item.status = db_check_in_out.company_lended
+            db_item.status = "Company lended"
             db_item.company_lended = db_check_in_out.company_lended
     db.commit()
     db.refresh(db_item)
