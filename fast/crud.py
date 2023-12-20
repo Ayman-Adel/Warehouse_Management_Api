@@ -133,7 +133,7 @@ def create_item(db: Session, item: schemas.ItemCreate):
 
 
 def get_all_items(skip: int, limit: int, db: Session):
-    return db.query(models.Item).offset(skip).limit(limit).all()
+    return db.query(models.Item).offset(skip).limit(limit).options(joinedload(models.Item.tool)).all()
 
 
 def update_item(db: Session, item_id: int, item: schemas.ItemCreate):
