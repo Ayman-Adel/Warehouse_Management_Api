@@ -238,7 +238,7 @@ def create_book(db: Session, book: schemas.BookCreate):
         #if db_book.item_id is not None:
             #db_item.status = "Booked"
             
-    return db_book
+     return db_book
 
 
 def get_all_books(skip: int, limit: int, db: Session):
