@@ -4,3 +4,6 @@ sqlalchemy[mssql]>=2.0.23
 python-jose>=3.3.0
 pyjwt==1.7.1 
 python-decouple==3.3
+hypercorn==0.14.4
+python-multipart==0.0.5
+Pillow==8.3.2
