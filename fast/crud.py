@@ -1,5 +1,7 @@
+from mysqlx import ColumnType
+from sqlalchemy import column, null
 from sqlalchemy.orm import Session
-
+from sqlalchemy.orm import joinedload
 from . import models, schemas
 
 # Branch CRUD Functions
@@ -83,7 +85,7 @@ def delete_employee(db: Session, employee_id: int):
 
 # Tool CRUD Functions
 def get_tool(db: Session, tool_id: int):
-    return db.query(models.Tool).filter(models.Tool.tool_id == tool_id).first()
+    return db.query(models.Tool).filter(models.Tool.tool_id == tool_id).options(joinedload(models.Tool.items)).first()
 
 
 def create_tool(db: Session, tool: schemas.ToolCreate):
@@ -118,7 +120,8 @@ def delete_tool(db: Session, tool_id: int):
 
 # Tool CRUD Functions
 def get_item(db: Session, item_id: int):
-    return db.query(models.Item).filter(models.Item.item_id == item_id).first()
+    item = db.query(models.Item).filter(models.Item.item_id == item_id).options(joinedload(models.Item.tool)).first()
+    return item
 
 
 def create_item(db: Session, item: schemas.ItemCreate):
@@ -151,38 +154,71 @@ def delete_item(db: Session, item_id: int):
     return db_item_delete
 
 
-# Add CRUD Functions
-def get_add(db: Session, add_id: int):
-    return db.query(models.AddItem).filter(models.AddItem.add_id == add_id).first()
+# Add_item CRUD Functions
+def get_additem(db: Session, add_item_id : int):
+    return db.query(models.AddItem).filter(models.AddItem.add_item_id  == add_item_id ).first()
 
 
-def create_add(db: Session, add: schemas.AddItemCreate):
-    db_add = models.AddItem(**add.model_dump())
-    db.add(db_add)
+def create_additem(db: Session, additem: schemas.AddItemCreate):
+    db_additem = models.AddItem(**additem.model_dump())
+    db.add(db_additem )
     db.commit()
-    db.refresh(db_add)
-    return db_add
+    db.refresh(db_additem )
+    return db_additem 
 
 
-def get_all_adds(skip: int, limit: int, db: Session):
+def get_all_additems(skip: int, limit: int, db: Session):
     return db.query(models.AddItem).offset(skip).limit(limit).all()
 
 
-def update_add(db: Session, add_id):
-    db_add_update = (models.AddItem).filter(
-        models.AddItem.add_id == add_id).first()
-    db.add(db_add_update)
+def update_additem(db: Session, add_item_id):
+    db_additem_update = (models.AddItem).filter(
+        models.AddItem.add_item_id == add_item_id).first()
+    db.add(db_additem_update)
     db.commit()
-    db.refresh(db_add_update)
-    return db_add_update
+    db.refresh(db_additem_update)
+    return db_additem_update
 
 
-def delete_add(db: Session, add_id):
-    db_add_delete = db.query(models.AddItem).filter(
-        models.AddItem.add_id == add_id).first()
-    db.delete(db_add_delete)
+def delete_additem(db: Session, add_item_id):
+    db_additem_delete = db.query(models.AddItem).filter(
+        models.AddItem.add_item_id == add_item_id).first()
+    db.delete(db_additem_delete)
     db.commit()
-    return db_add_delete
+    return db_additem_delete
+
+# Add_tool CRUD Functions
+def get_addtool(db: Session, add_tool_id  : int):
+    return db.query(models.AddTool).filter(models.AddTool.add_tool_id  == add_tool_id  ).first()
+
+
+def create_addtool(db: Session, addtool: schemas.AddToolCreate):
+    db_addtool = models.AddItem(**addtool.model_dump())
+    db.add(db_addtool)
+    db.commit()
+    db.refresh(db_addtool)
+    return db_addtool
+
+
+def get_all_addtools(skip: int, limit: int, db: Session):
+    return db.query(models.AddTool).offset(skip).limit(limit).all()
+
+
+def update_addtool(db: Session, add_tool_id ):
+    db_addtool_update = (models.AddTool).filter(
+        models.AddTool.add_tool_id  == add_tool_id ).first()
+    db.add(db_addtool_update)
+    db.commit()
+    db.refresh(db_addtool_update)
+    return db_addtool_update
+
+
+def delete_addtool(db: Session, add_tool_id ):
+    db_addtool_delete = db.query(models.AddTool).filter(
+        models.AddTool.add_tool_id  == add_tool_id ).first()
+    db.delete(db_addtool_delete)
+    db.commit()
+    return db_addtool_delete
 
 # Book CRUD Functions
 
@@ -196,6 +232,12 @@ def create_book(db: Session, book: schemas.BookCreate):
     db.add(db_book)
     db.commit()
     db.refresh(db_book)
+    db_item = db.query(models.Item).filter(models.Item.item_id == db_book.item_id).first()
+    if db_item :
+      
+        #if db_book.item_id is not None:
+            #db_item.status = "Booked"
+            
     return db_book
 
 
@@ -220,13 +262,12 @@ def delete_book(db: Session, book_id: int):
     db.commit()
     return db_book_delete
 
-
-# Check_in_out CRUD Functions
-def get_check_in_out(db: Session, check_id: int):
+# Check_in CRUD Functions
+def get_check_in(db: Session, check_id: int):
     return db.query(models.Check_in_out).filter(models.Check_in_out.check_id == check_id).first()
 
 
-def create_check_in_out(db: Session, check_in_out: schemas.Check_in_out):
+def create_check_in(db: Session, check_in_out: schemas.Check_in_out_Create):
     db_check_in_out = models.Check_in_out(**check_in_out.model_dump())
     db.add(db_check_in_out)
     db.commit()
@@ -234,11 +275,11 @@ def create_check_in_out(db: Session, check_in_out: schemas.Check_in_out):
     return db_check_in_out
 
 
-def get_all_check_in_outs(skip: int, limit: int, db: Session):
+def get_all_check_ins(skip: int, limit: int, db: Session):
     return db.query(models.Check_in_out).offset(skip).limit(limit).all()
 
 
-def update_check_in_out(db: Session, check_id: int, check_in_out: schemas.Check_in_out):
+def update_check_in(db: Session, check_id: int, check_in_out: schemas.Check_in_out):
     db_check_in_out_update = db.query(models.Check_in_out).filter(
         models.Check_in_out.check_id == check_id).first()
     for key, value in check_in_out.model_dump().items():
@@ -248,7 +289,52 @@ def update_check_in_out(db: Session, check_id: int, check_in_out: schemas.Check_
     return db_check_in_out_update
 
 
-def delete_check_in_out(db: Session, check_id: int):
+def delete_check_in(db: Session, check_id: int):
+    db_check_in_out_delete = db.query(models.Check_in_out).filter(
+        models.Check_in_out.check_id == check_id).first()
+    db.delete(db_check_in_out_delete)
+    db.commit()
+    return db_check_in_out_delete
+
+# Check_out CRUD Functions
+def get_check_out(db: Session, check_id: int):
+    return db.query(models.Check_in_out).filter(models.Check_in_out.check_id == check_id).first()
+
+
+def create_check_out(db: Session, check_in_out: schemas.Check_in_out_Create):
+    db_check_in_out = models.Check_in_out(**check_in_out.model_dump())
+    db.add(db_check_in_out)
+    db.commit()
+    db.refresh(db_check_in_out)
+    db_item = db.query(models.Item).filter(models.Item.item_id == db_check_in_out.item_id).first()
+    if db_item :
+
+        if db_check_in_out.job_assigned is not None:
+            db_item.status = db_check_in_out.job_assigned
+            db_item.job_assigned = db_check_in_out.job_assigned
+        elif db_check_in_out.company_lended is not None:
+            db_item.status = db_check_in_out.company_lended
+            db_item.company_lended = db_check_in_out.company_lended
+    db.commit()
+    db.refresh(db_item)
+    return db_check_in_out
+
+
+def get_all_check_outs(skip: int, limit: int, db: Session):
+    return db.query(models.Check_in_out).offset(skip).limit(limit).all()
+
+
+def update_check_out(db: Session, check_id: int, check_in_out: schemas.Check_in_out):
+    db_check_in_out_update = db.query(models.Check_in_out).filter(
+        models.Check_in_out.check_id == check_id).first()
+    for key, value in check_in_out.model_dump().items():
+        setattr(db_check_in_out_update, key, value)
+    db.commit()
+    db.refresh(db_check_in_out_update)
+    return db_check_in_out_update
+
+
+def delete_check_out(db: Session, check_id: int):
     db_check_in_out_delete = db.query(models.Check_in_out).filter(
         models.Check_in_out.check_id == check_id).first()
     db.delete(db_check_in_out_delete)

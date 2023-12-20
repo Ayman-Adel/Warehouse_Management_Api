@@ -1,7 +1,9 @@
-adds = 'adds'
 books = 'books'
 comments = 'comments'
-check_in_outs = 'check_in_outs'
+additems = "additems"
+addtools = "addtools"
+check_ins = 'check_ins'
+check_outs = 'check_outs'
 branches = 'branches'
 employees = 'employees'
 tools = 'tools'

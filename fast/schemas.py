@@ -2,6 +2,8 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from datetime import date, time
 
+from sqlalchemy import null
+
 
 class BranchBase(BaseModel):
     branch_name: str
@@ -16,6 +18,65 @@ class Branch(BranchBase):
 
     class Config:
         from_attributes = True
+
+class CommentBase(BaseModel):
+    employee_id: int
+    comment: str
+    type: str
+
+
+class CommentCreate(CommentBase):
+    pass
+
+
+class Comment(CommentBase):
+    comment_id: int
+    item_id : int
+    date: date
+    time: time
+
+    class Config:
+        from_attributes = True
+
+class Check_In_Out_Base(BaseModel):
+    item_id: int
+    employee_id: int
+    check_out_date: date
+    check_out_time: time
+    estimated_Check_in_Date: date
+    job_assigned: Optional[str] = str(null)
+    company_lended: Optional[str] = str(null)
+
+
+
+class Check_in_out_Create(Check_In_Out_Base):
+    pass
+
+
+class Check_in_out(Check_In_Out_Base):
+    check_in_date: date
+    check_in_time: time
+    check_id: int
+
+    class Config:
+        from_attributes = True
+
+class BookBase(BaseModel):
+    item_id: int
+    employee_id: int
+    future_check_out_date: date
+
+
+class BookCreate(BookBase):
+    pass
+
+
+class Book(BookBase):
+    book_id: int
+
+    class Config:
+        from_attributes = True
+
 
 
 class EmployeeBase(BaseModel):
@@ -74,9 +135,11 @@ class Tool(ToolBase):
 
 class ItemBase(BaseModel):
     tool_id: int
+    job_assigned: Optional[str] 
+    company_lended: Optional[str]
     branch_id: int
     status: str
-
+    
 
 class ItemCreate(ItemBase):
     pass
@@ -134,58 +197,7 @@ class AddTool(AddToolBase):
         from_attributes = True
 
 
-class BookBase(BaseModel):
-    item_id: int
-    employee_id: int
-    future_check_out_date: date
 
 
-class BookCreate(BookBase):
-    pass
 
 
-class Book(BookBase):
-    book_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class Check_In_Out_Base(BaseModel):
-    item_id: int
-    employee_id: int
-    check_out_date: date
-    check_out_time: time
-    estimated_Check_in_Date: date
-
-
-class Check_in_out_Create(Check_In_Out_Base):
-    pass
-
-
-class Check_in_out(Check_In_Out_Base):
-    check_in_date: date
-    check_in_time: time
-    check_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class CommentBase(BaseModel):
-    employee_id: int
-    comment: str
-    type: str
-
-
-class CommentCreate(CommentBase):
-    pass
-
-
-class Comment(CommentBase):
-    comment_id: int
-    date: date
-    time: time
-
-    class Config:
-        from_attributes = True
