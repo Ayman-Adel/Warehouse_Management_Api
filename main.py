@@ -5,7 +5,6 @@ from typing import List
 from fast import models, schemas, crud
 from fast.endpoints import *
 from fast.database import SessionLocal, engine
-from auth.jwt_handler import signjwt
 import uvicorn
 
 models.Base.metadata.create_all(bind=engine)
@@ -29,7 +28,7 @@ def read_root():
 # Branch Api functions
 
 
-@app.post(f"/{branches}/""",) #response_model=schemas.Branch)
+@app.post(f"/{branches}/""",tags=["Branch"]) 
 def create_branch(branch: schemas.BranchCreate, db: Session = Depends(get_db)):
     db_branch = crud.create_branch(db, branch=branch)
     if db_branch is None:
@@ -38,7 +37,7 @@ def create_branch(branch: schemas.BranchCreate, db: Session = Depends(get_db)):
     return "Branch has been created"
 
 
-@app.get(f"/{branches}/""{branch_id}",) #response_model=schemas.Branch)
+@app.get(f"/{branches}/""{branch_id}",tags=["Branch"]) 
 def read_branch(branch_id: int, db: Session = Depends(get_db)):
     db_branch = crud.get_branch(db, branch_id=branch_id)
     if db_branch is None:
@@ -46,13 +45,13 @@ def read_branch(branch_id: int, db: Session = Depends(get_db)):
     return db_branch
 
 
-@app.get(f"/{branches}/""",) #response_model=List[schemas.Branch])
+@app.get(f"/{branches}/""",tags=["Branch"]) 
 def read_all_branches(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     branches = crud.get_all_branches(skip, limit, db)
     return branches
 
 
-@app.delete(f"/{branches}/""{branch_id}",) #response_model=schemas.Branch)
+@app.delete(f"/{branches}/""{branch_id}",tags=["Branch"]) 
 def delete_branch(branch_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_branch(db, branch_id=branch_id)
     if db_delete is None:
@@ -60,7 +59,7 @@ def delete_branch(branch_id: int, db: Session = Depends(get_db)):
     return "Branch has been deleted"
 
 
-@app.put(f"/{branches}/""{branch_id}",) #response_model=schemas.Branch)
+@app.put(f"/{branches}/""{branch_id}",tags=["Branch"]) 
 def update_branch(branch_id: int, branch: schemas.BranchCreate, db: Session = Depends(get_db)):
     db_update = crud.update_branch(db, branch_id=branch_id, branch=branch)
     if db_update is None:
@@ -69,17 +68,13 @@ def update_branch(branch_id: int, branch: schemas.BranchCreate, db: Session = De
 
 
 # Employee Api Functions
-    # will be deleted and replaced by signup
-@app.post(f"/{employees}/""",) #response_model=schemas.Employee)
+@app.post(f"/{employees}/""",tags=["employees"]) 
 def create_employee(employee: schemas.EmployeeCreate, db: Session = Depends(get_db)):
     db_employee = crud.create_employee(db, employee=employee)
-    if db_employee is None:
-        raise HTTPException(
-            status_code=400, detail="Employee_id is already exists")
     return db_employee
 
 
-@app.get(f"/{employees}/""{employee_id}",) #response_model=schemas.Employee)
+@app.get(f"/{employees}/""{employee_id}",tags=["employees"]) 
 def read_employee(employee_id: int, db: Session = Depends(get_db)):
     db_employee = crud.get_employee(db, employee_id=employee_id)
     if db_employee is None:
@@ -87,14 +82,14 @@ def read_employee(employee_id: int, db: Session = Depends(get_db)):
     return db_employee
 
 
-@app.get(f"/{employees}/""",) #response_model=List[schemas.Employee])
+@app.get(f"/{employees}/""",tags=["employees"])
 def read_all_employees(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     employees = crud.get_all_employees(skip, limit, db)
     return employees
 
 
-# response_model=schemas.Employee)
-@app.delete(f"/{employees}/""{employee_id}", )
+
+@app.delete(f"/{employees}/""{employee_id}",tags=["employees"] )
 def delete_employee(employee_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_employee(db, employee_id=employee_id)
     if db_delete is None:
@@ -102,7 +97,7 @@ def delete_employee(employee_id: int, db: Session = Depends(get_db)):
     return "Employee has been deleted"
 
 
-@app.put(f"/{employees}/""{employee_id}",) #response_model=schemas.Employee)
+@app.put(f"/{employees}/""{employee_id}",tags=["employees"])
 def update_employee(employee_id: int, employee: schemas.EmployeeCreate, db: Session = Depends(get_db)):
     db_update = crud.update_employee(
         db, employee_id=employee_id, employee=employee)
@@ -110,35 +105,25 @@ def update_employee(employee_id: int, employee: schemas.EmployeeCreate, db: Sess
         raise HTTPException(status_code=404, detail="Employee not found")
     return "Employee has been updated"
 
-
-# sinup
-@app.post(f"/employee/sinup", tags=["singup"])
-def employee_signup(employee: schemas.EmployeeCreate, db: Session = Depends(get_db)):
+#signup
+@app.post("/sign",tags=["sign up"])
+def sing_up(employee: schemas.EmployeeCreate, db: Session = Depends(get_db)):
     db_employee = crud.create_employee(db, employee=employee)
-    if db_employee is None:
+    return db_employee
+
+#sing in
+@app.post(f"/sign/""",tags=["sign in"])
+def sign_in(employee: schemas.EmployeeLogin, db: Session = Depends(get_db)):
+    if crud.signin_employee(db, employee):
+        return crud.signin_employee(db, employee)
+    else:
         raise HTTPException(
-            status_code=400, detail="Employee_id is already exists")
-    return signjwt(employee.email)
-
-
-def check_employee(employee: schemas.EmployeeLogin, skip: int, db: Session):
-    employees = crud.get_all_employees_emails(db=db, skip=skip)
-    for email in employees:
-        if email == employee.email:
-            return True
-    return False
-
-
-# login
-@app.post(f"/employee/sinin", tags=["sign in"])
-def employee_login(employee: schemas.EmployeeLogin, db: Session = Depends(get_db)):
-    if (check_employee(employee=employee, db=db, skip=0)):
-        return signjwt(employee.email)
-    return {"error": "invalid email address"}
-
+            status_code="404",
+            detail="Invalid email or password",
+        )
 
 # Tool Api Functions
-@app.post(f"/{tools}/""",) #response_model=schemas.Tool)
+@app.post(f"/{tools}/""",tags=["tools"])
 def create_tool(tool: schemas.ToolCreate, db: Session = Depends(get_db)):
     db_tool = crud.create_tool(db, tool=tool)
     if db_tool is None:
@@ -147,7 +132,7 @@ def create_tool(tool: schemas.ToolCreate, db: Session = Depends(get_db)):
     return "Tool has been created"
 
 
-@app.get(f"/{tools}/""{tool_id}",) #response_model=schemas.Tool)
+@app.get(f"/{tools}/""{tool_id}",tags=["tools"])
 def read_tool(tool_id: int, db: Session = Depends(get_db)):
     db_tool = crud.get_tool(db, tool_id=tool_id)
     if db_tool is None:
@@ -155,13 +140,13 @@ def read_tool(tool_id: int, db: Session = Depends(get_db)):
     return db_tool
 
 
-@app.get(f"/{tools}/""",) #response_model=List[schemas.Tool])
+@app.get(f"/{tools}/""",tags=["tools"])
 def read_all_tools(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     tools = crud.get_all_tools(skip, limit, db)
     return tools
 
 
-@app.delete(f"/{tools}/""{tool_id}}",) #response_model=schemas.Tool)
+@app.delete(f"/{tools}/""{tool_id}}",tags=["tools"])
 def delete_tool(tool_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_tool(db, tool_id=tool_id)
     if db_delete is None:
@@ -169,7 +154,7 @@ def delete_tool(tool_id: int, db: Session = Depends(get_db)):
     return "Tool has been deleted"
 
 
-@app.put(f"/{tools}/""{tool_id}}",) #response_model=schemas.Tool)
+@app.put(f"/{tools}/""{tool_id}}",tags=["tools"])
 def update_tool(tool_id: int, tool: schemas.ToolCreate, db: Session = Depends(get_db)):
     db_update = crud.update_tool(db, tool_id=tool_id, tool=tool)
     if db_update is None:
@@ -177,7 +162,7 @@ def update_tool(tool_id: int, tool: schemas.ToolCreate, db: Session = Depends(ge
     return "Tool has been updated"
 
 # Item Api Function
-@app.post(f"/{items}/""",) #response_model=schemas.Item)
+@app.post(f"/{items}/""",tags=["items"])
 def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
     db_item = crud.create_item(db, item=item)
     if db_item is None:
@@ -186,7 +171,7 @@ def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
     return "Item has been created"
 
 
-@app.get(f"/{items}/""{item_id}",) #response_model=schemas.Item)
+@app.get(f"/{items}/""{item_id}",tags=["items"])
 def read_item(item_id: int ,db: Session = Depends(get_db)):
     db_item = crud.get_item(db, item_id=item_id)
     if db_item is None:
@@ -194,13 +179,13 @@ def read_item(item_id: int ,db: Session = Depends(get_db)):
     return db_item
 
 
-@app.get(f"/{items}/""",) #response_model=List[schemas.Item])
+@app.get(f"/{items}/""",tags=["items"])
 def read_all_items(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     items = crud.get_all_items(skip, limit, db)
     return items
 
 
-@app.delete(f"/{items}/""{item_id}}",) #response_model=schemas.Item)
+@app.delete(f"/{items}/""{item_id}}",tags=["items"])
 def delete_item(item_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_item(db, item_id=item_id)
     if db_delete is None:
@@ -208,7 +193,7 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
     return "Item has been deleted"
 
 
-@app.put(f"/{items}/""{item_id}",) #response_model=schemas.Item)
+@app.put(f"/{items}/""{item_id}",tags=["items"])
 def update_item(item_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)):
     db_update = crud.update_item(db, item_id=item_id, item=item)
     if db_update is None:
@@ -217,7 +202,7 @@ def update_item(item_id: int, item: schemas.ItemCreate, db: Session = Depends(ge
 
 
 # Additem Api functions
-@app.post(f"/{additems}""/", response_model=schemas.AddItem)
+@app.post(f"/{additems}""/", tags=["Additem"])
 def create_additem(additem: schemas.AddItemCreate, db: Session = Depends(get_db)):
      db_add = crud.create_additem(db, additem=additem)
      if db_add is None:
@@ -225,7 +210,7 @@ def create_additem(additem: schemas.AddItemCreate, db: Session = Depends(get_db)
      return "Additem has been created"
 
 
-@app.get(f"/{additems}""/{add_item_id}",) #  response_model=schemas.AddItem)
+@app.get(f"/{additems}""/{add_item_id}",tags=["Additem"])
 def read_additem(add_item_id: int, db: Session = Depends(get_db)):
      db_additem = crud.get_additem(db, add_item_id=add_item_id)
      if db_additem is None:
@@ -233,13 +218,13 @@ def read_additem(add_item_id: int, db: Session = Depends(get_db)):
      return db_additem
 
 
-@app.get(f"/{additems}""/",) # response_model=List[schemas.AddItem])
+@app.get(f"/{additems}""/",tags=["Additem"])
 def read_all_additems(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
      additems = crud.get_all_additems(skip, limit, db)
      return additems
 
 
-@app.delete(f"/{additems}""/{add_item_id}",) #response_model=schemas.AddItem)
+@app.delete(f"/{additems}""/{add_item_id}",tags=["Additem"])
 def delete_additem(add_item_id: int, db: Session = Depends(get_db)):
      db_delete = crud.delete_additem(db, add_item_id=add_item_id)
      if db_delete is None:
@@ -247,7 +232,7 @@ def delete_additem(add_item_id: int, db: Session = Depends(get_db)):
      return "Additem has been deleted"
 
 
-@app.put(f"/{additems}""/{add_item_id}", response_model=schemas.AddItem)
+@app.put(f"/{additems}""/{add_item_id}", tags=["Additem"])
 def update_additem(add_item_id: int, db: Session = Depends(get_db)):
      db_update = crud.update_additem(db, add_item_id=add_item_id)
      if db_update is None:
@@ -255,7 +240,7 @@ def update_additem(add_item_id: int, db: Session = Depends(get_db)):
      return "Additem has been updated"
 
 # Addtool Api functions
-@app.post(f"/{addtools}""/", response_model=schemas.AddTool)
+@app.post(f"/{addtools}""/", tags=["Addtool"])
 def create_addtool(addtool: schemas.AddToolCreate, db: Session = Depends(get_db)):
      db_add = crud.create_addtool(db, addtool=addtool)
      if db_add is None:
@@ -263,7 +248,7 @@ def create_addtool(addtool: schemas.AddToolCreate, db: Session = Depends(get_db)
      return "Addtool has been created"
 
 
-@app.get(f"/{addtools}""/{add_tool_id}",) #  response_model=schemas.AddTool)
+@app.get(f"/{addtools}""/{add_tool_id}",tags=["Addtool"])
 def read_addtool(add_tool_id: int, db: Session = Depends(get_db)):
      db_addtool = crud.get_addtool(db, add_tool_id=add_tool_id)
      if db_addtool is None:
@@ -271,13 +256,13 @@ def read_addtool(add_tool_id: int, db: Session = Depends(get_db)):
      return db_addtool
 
 
-@app.get(f"/{addtools}""/",) # response_model=List[schemas.AddTool])
+@app.get(f"/{addtools}""/",tags=["Addtool"])
 def read_all_addtools(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
      addtools = crud.get_all_addtools(skip, limit, db)
      return addtools
 
 
-@app.delete(f"/{addtools}""/{add_tool_id}",) #response_model=schemas.AddTool)
+@app.delete(f"/{addtools}""/{add_tool_id}",tags=["Addtool"])
 def delete_addtool(add_tool_id: int, db: Session = Depends(get_db)):
      db_delete = crud.delete_addtool(db, add_tool_id=add_tool_id)
      if db_delete is None:
@@ -285,7 +270,7 @@ def delete_addtool(add_tool_id: int, db: Session = Depends(get_db)):
      return "Addtool has been deleted"
 
 
-@app.put(f"/{addtools}""/{add_tool_id}", response_model=schemas.AddTool)
+@app.put(f"/{addtools}""/{add_tool_id}", tags=["Addtool"])
 def update_addtool(add_tool_id: int, db: Session = Depends(get_db)):
      db_update = crud.update_addtool(db, add_tool_id=add_tool_id)
      if db_update is None:
@@ -294,7 +279,7 @@ def update_addtool(add_tool_id: int, db: Session = Depends(get_db)):
 
 
 # Book Api Functions
-@app.post(f"/{books}/""",) #response_model=schemas.Book)
+@app.post(f"/{books}/""",tags=["books"])
 def create_book(book: schemas.BookCreate, db: Session = Depends(get_db)):
     db_book = crud.create_book(db, book=book)
     if db_book is None:
@@ -304,7 +289,7 @@ def create_book(book: schemas.BookCreate, db: Session = Depends(get_db)):
 # Read Book
 
 
-@app.get(f"/{books}/""{book_id}",) #response_model=schemas.Book)
+@app.get(f"/{books}/""{book_id}",tags=["books"])
 def read_book(book_id: int, db: Session = Depends(get_db)):
     db_book = crud.get_book(db, book_id=book_id)
     if db_book is None:
@@ -314,13 +299,13 @@ def read_book(book_id: int, db: Session = Depends(get_db)):
 # Read All Books
 
 
-@app.get(f"/{books}/""",) #response_model=List[schemas.Book])
+@app.get(f"/{books}/""",tags=["books"])
 def read_all_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     books = crud.get_all_books(skip, limit, db)
     return books
 
 
-@app.delete(f"/{books}/""{book_id}",) #response_model=schemas.Book)
+@app.delete(f"/{books}/""{book_id}",tags=["books"])
 def delete_book(book_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_book(db, book_id=book_id)
     if db_delete is None:
@@ -328,7 +313,7 @@ def delete_book(book_id: int, db: Session = Depends(get_db)):
     return "Book has been deleted"
 
 
-@app.put(f"/{books}/""{book_id}",) #response_model=schemas.Book)
+@app.put(f"/{books}/""{book_id}",tags=["books"])
 def update_book(book_id: int, book: schemas.BookCreate, db: Session = Depends(get_db)):
     db_update = crud.update_book(db, book_id=book_id, book=book)
     if db_update is None:
@@ -337,7 +322,7 @@ def update_book(book_id: int, book: schemas.BookCreate, db: Session = Depends(ge
 
 
 # Check_in Api functions
-@app.post(f"/{check_ins}/""",) #response_model=schemas.Check_in_out)
+@app.post(f"/{check_ins}/""",tags=["check_ins"])
 def create_check_in(check_in_out: schemas.Check_in_out_Create, db: Session = Depends(get_db)):
     db_check_in = crud.create_check_in(db, check_in_out=check_in_out)
     if db_check_in is None:
@@ -346,8 +331,7 @@ def create_check_in(check_in_out: schemas.Check_in_out_Create, db: Session = Dep
     return "Check_in has been created"
 
 
-# response_model=schemas.Check_in_out)
-@app.get(f"/{check_ins}/""{check_id}", )
+@app.get(f"/{check_ins}/""{check_id}", tags=["check_ins"])
 def read_check_in(check_id: int, db: Session = Depends(get_db)):
     db_check_in = crud.get_check_in(db, check_id=check_id)
     if db_check_in is None:
@@ -355,14 +339,14 @@ def read_check_in(check_id: int, db: Session = Depends(get_db)):
     return db_check_in
 
 
-@app.get(f"/{check_ins}/""",) #response_model=List[schemas.Check_in_out])
+@app.get(f"/{check_ins}/""",tags=["check_ins"])
 def read_all_check_ins(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     check_ins = crud.get_all_check_ins(skip, limit, db)
     return check_ins
 
 
 
-@app.delete(f"/{check_ins}/""{check_id}",) # response_model=schemas.Check_in_out))
+@app.delete(f"/{check_ins}/""{check_id}",tags=["check_ins"])
 def delete_check_in(check_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_check_in(db, check_id=check_id)
     if db_delete is None:
@@ -371,7 +355,7 @@ def delete_check_in(check_id: int, db: Session = Depends(get_db)):
 
 
 
-@app.put(f"/{check_ins}/""{check_id}",) # response_model=schemas.Check_in_out))
+@app.put(f"/{check_ins}/""{check_id}",tags=["check_ins"])
 def update_check_in(check_id: int, check_in_out: schemas.Check_in_out, db: Session = Depends(get_db)):
     db_update = crud.update_check_in(
         db, check_id=check_id, check_in_out=check_in_out)
@@ -380,7 +364,7 @@ def update_check_in(check_id: int, check_in_out: schemas.Check_in_out, db: Sessi
     return "Check_in has been updated"
 
 # Check_out Api functions
-@app.post(f"/{check_outs}/""",) #response_model=schemas.Check_in_out)
+@app.post(f"/{check_outs}/""",tags=["check_ins"])
 def create_check_out(check_in_out: schemas.Check_in_out_Create, db: Session = Depends(get_db)):
     db_check_out = crud.create_check_out(db, check_in_out=check_in_out)
     if db_check_out is None:
@@ -389,8 +373,8 @@ def create_check_out(check_in_out: schemas.Check_in_out_Create, db: Session = De
     return "Check_out has been created"
 
 
-# response_model=schemas.Check_in_out)
-@app.get(f"/{check_outs}/""{check_id}", )
+
+@app.get(f"/{check_outs}/""{check_id}", tags=["check_outs"])
 def read_check_out(check_id: int, db: Session = Depends(get_db)):
     db_check_out = crud.get_check_out(db, check_id=check_id)
     if db_check_out is None:
@@ -398,14 +382,14 @@ def read_check_out(check_id: int, db: Session = Depends(get_db)):
     return db_check_out
 
 
-@app.get(f"/{check_outs}/""",) #response_model=List[schemas.Check_in_out])
+@app.get(f"/{check_outs}/""",tags=["check_outs"])
 def read_all_check_outs(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     check_outs = crud.get_all_check_outs(skip, limit, db)
     return check_outs
 
 
 
-@app.delete(f"/{check_outs}/""{check_id}",) # response_model=schemas.Check_in_out))
+@app.delete(f"/{check_outs}/""{check_id}",tags=["check_outs"])
 def delete_check_out(check_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_check_out(db, check_id=check_id)
     if db_delete is None:
@@ -414,7 +398,7 @@ def delete_check_out(check_id: int, db: Session = Depends(get_db)):
 
 
 
-@app.put(f"/{check_outs}/""{check_id}",) # response_model=schemas.Check_in_out))
+@app.put(f"/{check_outs}/""{check_id}",tags=["check_outs"])
 def update_check_out(check_id: int, check_in_out: schemas.Check_in_out, db: Session = Depends(get_db)):
     db_update = crud.update_check_out(
         db, check_id=check_id, check_in_out=check_in_out)
@@ -424,7 +408,7 @@ def update_check_out(check_id: int, check_in_out: schemas.Check_in_out, db: Sess
 
 
 # Comment Api Functions
-@app.post(f"/{comments}/""",) #response_model=schemas.Comment)
+@app.post(f"/{comments}/""",tags=["Comment"])
 def create_comment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     db_comment = crud.create_comment(db, comment=comment)
     if db_comment is None:
@@ -433,7 +417,7 @@ def create_comment(comment: schemas.CommentCreate, db: Session = Depends(get_db)
     return "Comment has been created"
 
 
-@app.get(f"/{comments}/""{comment_id}",) #response_model=schemas.Comment)
+@app.get(f"/{comments}/""{comment_id}",tags=["Comment"])
 def read_comment(comment_id: int, db: Session = Depends(get_db)):
     db_comment = crud.get_comment(db, comment_id=comment_id)
     if db_comment is None:
@@ -441,13 +425,13 @@ def read_comment(comment_id: int, db: Session = Depends(get_db)):
     return db_comment
 
 
-@app.get(f"/{comments}/""",) #response_model=List[schemas.Comment])
+@app.get(f"/{comments}/""",tags=["Comment"])
 def read_all_comments(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     comments = crud.get_all_comments(skip, limit, db)
     return comments
 
 
-@app.delete(f"/{comments}/""{comment_id}",) #response_model=schemas.Comment)
+@app.delete(f"/{comments}/""{comment_id}",tags=["Comment"])
 def delete_comment(comment_id: int, db: Session = Depends(get_db)):
     db_delete = crud.delete_comment(db, comment_id=comment_id)
     if db_delete is None:
@@ -455,7 +439,7 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db)):
     return "Comment has been deleted"
 
 
-@app.put(f"/{comments}/""{comment_id}",) #response_model=schemas.Comment)
+@app.put(f"/{comments}/""{comment_id}",tags=["Comment"])
 def update_comment(comment_id: int, comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     db_update = crud.update_comment(db, comment_id=comment_id, comment=comment)
     if db_update is None:
@@ -464,18 +448,3 @@ def update_comment(comment_id: int, comment: schemas.CommentCreate, db: Session 
 
 
 
-
-# auth
-# register
-# login
-# logout
-# admin prev
-
-# emp -> admin
-# add insert tools
-# delete direct access on add tables
-
-# brook check  into 2 stages
-# stage in stage out
-
-# redesign messages

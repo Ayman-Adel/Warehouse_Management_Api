@@ -1,7 +1,4 @@
-import sys
-sys.path.append(
-    r"C:\Users\Serag Amged\Programing\fastapi\Warehouse_Management_Api-main")
-from sqlalchemy import Time, Date, Boolean, Column, ForeignKey, Integer, String, func, null
+from sqlalchemy import Time, Date, Boolean, Column, ForeignKey, Integer, String, column, func, null
 from fast.database import Base
 from sqlalchemy.orm import relationship
 
@@ -35,6 +32,18 @@ class Employee(Base):
     check_in_outs = relationship("Check_in_out", back_populates="employee")
     comments = relationship("Comment", back_populates="employee")
     branch = relationship("Branch", back_populates="employees")
+    tokens=relationship("Token",back_populates="employee")
+
+
+class Token(Base):
+    __tablename__="token"
+
+    token_id= Column(Integer ,primary_key=True,autoincrement=True)
+    token= Column(String(255))
+    employee_id=Column(Integer ,ForeignKey(Employee.employee_id))
+
+
+    employee=relationship("Employee",back_populates="tokens")
 
 
 class Tool(Base):

@@ -1,8 +1,9 @@
+from fastapi import HTTPException
 from mysqlx import ColumnType
-from sqlalchemy import column, null
+from sqlalchemy import Null, column, false, null
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import joinedload
-from . import models, schemas
+from . import models, schemas, auth
 
 # Branch CRUD Functions
 #   C    R     U       D
@@ -49,11 +50,38 @@ def get_employee(db: Session, employee_id: int):
 
 
 def create_employee(db: Session, employee: schemas.EmployeeCreate):
+    employee.password=auth.AuthHandler().get_password_hash(employee.password)
     db_employee = models.Employee(**employee.model_dump())
-    db.add(db_employee)
+    try:
+        db.add(db_employee)
+        db.commit()
+        db.refresh(db_employee)
+        return db_employee
+    except:
+        raise HTTPException(
+            status_code=400, detail="Error in data")
+    
+
+def create_Token(db:Session,token:schemas.TokenCreate):
+    x=models.Token(**token.model_dump())
+    db.add(x)
     db.commit()
-    db.refresh(db_employee)
-    return db_employee
+    db.refresh(x)
+
+#check for email and password and generate token
+def signin_employee(db: Session, employee: schemas.EmployeeLogin):
+    db_employee = db.query(models.Employee).filter(models.Employee.email == employee.email).first()
+    if db_employee:
+        check = auth.AuthHandler().verify_password(employee.password, db_employee.password)
+        if check:
+            generated_token = str(auth.AuthHandler().encode_token(employee.email))
+            y = schemas.TokenCreate(token=generated_token, employee_id=db_employee.employee_id)
+            create_Token(db, y)
+            return generated_token
+    return Null
+            
+        
+    
 
 
 def get_all_employees(skip: int, limit: int, db: Session):

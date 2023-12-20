@@ -84,8 +84,8 @@ class EmployeeBase(BaseModel):
     role: str = "user"
     employee_name: str
     employee_phone_number: str
-    password: str
     email: str
+    password: str
 
 
 class EmployeeCreate(EmployeeBase):
@@ -104,12 +104,26 @@ class Employee(EmployeeBase):
         from_attributes = True
 
 
-class EmployeeLogin(BaseModel):
-    email: str = Field(default=None)
-    password: str = Field(default=None)
 
-    class Config:
+
+
+class EmployeeLogin(BaseModel):
+    email: str
+    password: str
+
+    class Config: 
         from_attributes = True
+
+
+class TokenBase(BaseModel):
+    token:str
+    employee_id: int
+
+class TokenCreate(TokenBase):
+    pass
+
+class Token(TokenBase):
+    token_id: int
 
 
 class ToolBase(BaseModel):
