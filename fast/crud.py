@@ -258,8 +258,14 @@ def update_book(db: Session, book_id: int, book: schemas.BookCreate):
 def delete_book(db: Session, book_id: int):
     db_book_delete = db.query(models.Book).filter(
         models.Book.book_id == book_id).first()
+    db_item = db.query(models.Item).filter(models.Item.item_id == db_book_delete.item_id).first()
+    if db_item :
+        if db_book_delete.item_id is not None:
+            db_item.status = null()
     db.delete(db_book_delete)
     db.commit()
+    db.refresh(db_item)
+    
     return db_book_delete
 
 # Check_in CRUD Functions
