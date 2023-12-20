@@ -376,7 +376,7 @@ def update_check_in(check_id: int, check_in_out: schemas.Check_in_out, db: Sessi
         db, check_id=check_id, check_in_out=check_in_out)
     if db_update is None:
         raise HTTPException(status_code=404, detail="Check_in not found")
-    return "Check_inhas been updated"
+    return "Check_in has been updated"
 
 # Check_out Api functions
 @app.post(f"/{check_outs}/""",) #response_model=schemas.Check_in_out)

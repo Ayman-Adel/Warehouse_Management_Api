@@ -290,6 +290,10 @@ def update_check_in(db: Session, check_id: int, check_in_out: schemas.Check_in_o
         models.Check_in_out.check_id == check_id).first()
     for key, value in check_in_out.model_dump().items():
         setattr(db_check_in_out_update, key, value)
+    if db_check_in_out_update:
+        db_check_in_out_update.check_out_date = null()
+        db_check_in_out_update.check_out_time = null()
+        db_check_in_out_update.estimated_Check_in_Date = null()
     db.commit()
     db.refresh(db_check_in_out_update)
     return db_check_in_out_update
